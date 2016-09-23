@@ -23,6 +23,7 @@
   "permissions": [
     "activeTab",
     "contextMenus",
+    "clipboardWrite",
     "https://test.quotepro.com/"
   ],
   "icons": {
