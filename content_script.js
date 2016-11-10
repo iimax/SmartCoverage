@@ -1,6 +1,6 @@
 // Copyright (c) 2016 iimax. All rights reserved.
 
-var clickedElement;
+var clickedElement,defaultCarrier='Your-CarrierName';
 var nameMapping = {
 	"BODINJ": ["BodilyInjury", "BI"], 
 	"PD": ["PropertyDamage", "PD"], 
@@ -20,6 +20,11 @@ var nameMapping = {
 document.addEventListener("mousedown", function(event){
 	//console.log(event);
 	//alert(event.srcElement);
+	chrome.storage.sync.get({
+	    carrier: 'Your-CarrierName'
+	  }, function(items) {
+	    defaultCarrier = items.carrier;
+	  });
 	clickedElement = event.target;
 }, true);
 
@@ -37,10 +42,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if(!nameMapping[_name]) {nameMapping[_name] = [_name, _name]}
 
 	var _opts = clickedElement.options, _codes = [];
-	_codes.push('<div style="height:100%;overflow:auto;"><pre id="iimax_codes" style="padding-left: 15px;">');
+	_codes.push('<div style="height:100%;overflow:auto;"><pre class="brush: vb; highlight: [1, 3];" id="iimax_codes" style="padding-left: 15px;">');
 	_codes.push('\'Quotepro ' + nameMapping[_name][0] + '\r\n');
 	for (var i = 0; i < _opts.length; i++) {
-		_codes.push('\'' + _opts[i].outerHTML.trim() + '\r\n');
+		_codes.push('\'' + _opts[i].outerHTML.trim().replace(/\n/g, "") + '\r\n');
 	}
 	if(_name == 'MEDPAY'){
 		_codes.push('Select Case hc.NumbersOnlyString(q.QVehicles.Item(0).'+ nameMapping[_name][0] +')\r\n');
@@ -54,14 +59,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	}
 	_codes.push('\tCase Else\r\n');
 	_codes.push('\t\tIf q.FromWhere = 3 Then\r\n');
-	_codes.push('\t\t\thc.SendReminderEmail(q, idc, "Unknown '+ nameMapping[_name][1] +' code:" & q.QVehicles.Item(0).'+ nameMapping[_name][0] +', AgentLogin, AgentPassword, ProducerCode, "Carrier-Code-Here")\r\n');
+	_codes.push('\t\t\thc.SendReminderEmail(q, idc, "Unknown '+ nameMapping[_name][1] +' code:" & q.QVehicles.Item(0).'+ nameMapping[_name][0] +', AgentLogin, AgentPassword, ProducerCode, "'+ defaultCarrier +'")\r\n');
 	_codes.push('\t\t\tMsgType = ErrorTypes.RetailError\r\n');
 	_codes.push('\t\t\tNonFatalError = True\r\n');
 	_codes.push('\t\t\tThrow New Exception("Data error, please restart your browser and try again with a new quote")\r\n');
 	_codes.push('\t\tElse\r\n');
 	_codes.push('\t\t\tThrow New Exception("Unknown '+ nameMapping[_name][1] +' code:" & q.QVehicles.Item(0).'+ nameMapping[_name][0] +')\r\n');
 	_codes.push('\t\tEnd If\r\n');
-	_codes.push('End Select\r\n<pre></div>');
+	_codes.push('End Select\r\n</pre></div>');
 	layer.open({
 	  type: 1,
 	  //skin: 'layui-layer-demo', //样式类名
@@ -76,8 +81,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  ,btnAlign: 'c'
 	  ,yes: function(index, layero){
 	    var wrapper = document.getElementById('iimax_codes');
+	    var codeNode = $('table tr td.code',wrapper);
     	var range = document.createRange();
-        range.selectNode(wrapper);
+        range.selectNode(codeNode[0]);
         var s = window.getSelection();
         s.removeAllRanges();
         s.addRange(range);
@@ -86,6 +92,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	    layer.close(index);
 	  },btn2: function(index, layero){
 	    layer.close(index);
+	  },success:function(){
+	  	SyntaxHighlighter.all();
+	  	SyntaxHighlighter.highlight();
 	  }
 	});
   }
