@@ -1,5 +1,4 @@
 // Saves options to chrome.storage.sync.
-document.getElementById('carrier').value = '21'
 function save_options() {
   var carrier = document.getElementById('carrier').value;
   chrome.storage.sync.set({

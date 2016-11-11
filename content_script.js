@@ -18,8 +18,6 @@ var nameMapping = {
 	"": ["", ""]
 };
 document.addEventListener("mousedown", function(event){
-	//console.log(event);
-	//alert(event.srcElement);
 	chrome.storage.sync.get({
 	    carrier: 'Your-CarrierName'
 	  }, function(items) {
@@ -42,7 +40,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if(!nameMapping[_name]) {nameMapping[_name] = [_name, _name]}
 
 	var _opts = clickedElement.options, _codes = [];
-	_codes.push('<div style="height:100%;overflow:auto;"><pre class="brush: vb; highlight: [1, 3];" id="iimax_codes" style="padding-left: 15px;">');
+	_codes.push('<div style="height:100%;overflow:auto;"><pre class="brush: vb; highlight: [1, '+ (_opts.length+2) +'];" id="iimax_codes" style="padding-left: 15px;">');
 	_codes.push('\'Quotepro ' + nameMapping[_name][0] + '\r\n');
 	for (var i = 0; i < _opts.length; i++) {
 		_codes.push('\'' + _opts[i].outerHTML.trim().replace(/\n/g, "") + '\r\n');
@@ -72,7 +70,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  //skin: 'layui-layer-demo', //样式类名
 	  area: ['630px', '460px'],
 	  //area: '630px',
-	  title: 'Hi',
+	  title: 0,
 	  closeBtn: 0,
 	  shift: 2,
 	  shadeClose: true, //开启遮罩关闭
